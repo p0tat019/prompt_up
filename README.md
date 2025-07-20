@@ -1,2 +1,14 @@
-# prompt_up
-바이브 코딩으로 만든 바이브 코딩을 하기 위한 툴 입니다.
+# Run and deploy your AI Studio app
+
+This contains everything you need to run your app locally.
+
+## Run Locally
+
+**Prerequisites:**  Node.js
+
+
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`
