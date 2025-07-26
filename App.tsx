@@ -4,14 +4,33 @@ import { PERSONAS } from './constants';
 import { generateOptimizedPrompt } from './services/geminiService';
 import PersonaCard from './components/PersonaCard';
 import { SparklesIcon } from './components/icons/SparklesIcon';
+import { LockIcon } from './components/icons/LockIcon';
 
 const App: React.FC = () => {
+    // Auth state
+    const [password, setPassword] = useState<string>('');
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+    const [authError, setAuthError] = useState<string>('');
+
+    // App state
     const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null);
     const [userTask, setUserTask] = useState<string>('');
     const [optimizedPrompt, setOptimizedPrompt] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string>('');
     const [isCopied, setIsCopied] = useState<boolean>(false);
+
+    const handleLogin = (e: React.FormEvent) => {
+        e.preventDefault();
+        // The password is provided by the environment variables on Vercel.
+        if (password === process.env.APP_PASSWORD) {
+            setIsAuthenticated(true);
+            setAuthError('');
+        } else {
+            setAuthError('잘못된 비밀번호입니다.');
+            setPassword('');
+        }
+    };
 
     const handleGenerate = useCallback(async () => {
         if (!selectedPersona || !userTask.trim()) {
@@ -50,6 +69,50 @@ const App: React.FC = () => {
         setError('');
         setIsCopied(false);
     };
+
+    if (!isAuthenticated) {
+        return (
+            <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center p-4">
+                <div className="w-full max-w-sm">
+                    <form onSubmit={handleLogin} className="bg-slate-800 p-8 rounded-2xl shadow-2xl border border-slate-700 space-y-6">
+                        <div className="text-center">
+                            <h1 className="text-3xl font-bold text-slate-100">인증 필요</h1>
+                            <p className="text-slate-400 mt-2">계속하려면 비밀번호를 입력하세요.</p>
+                        </div>
+                        
+                        <div>
+                            <label htmlFor="password-input" className="sr-only">비밀번호</label>
+                            <div className="relative">
+                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <LockIcon className="w-5 h-5 text-slate-500" />
+                                </span>
+                                <input
+                                    id="password-input"
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="비밀번호"
+                                    className="w-full pl-10 pr-4 py-3 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-shadow duration-200 text-slate-200 placeholder-slate-500"
+                                    required
+                                    aria-describedby="password-error"
+                                />
+                            </div>
+                            {authError && (
+                                <p id="password-error" className="mt-2 text-red-400 text-sm text-center">{authError}</p>
+                            )}
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="w-full inline-flex items-center justify-center px-8 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold rounded-lg shadow-lg transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            로그인
+                        </button>
+                    </form>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col items-center p-4 sm:p-6 lg:p-8">

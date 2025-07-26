@@ -17,8 +17,6 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
  */
 export const generateOptimizedPrompt = async (persona: Persona, userTask: string): Promise<string> => {
     
-    const model = ai.models['gemini-2.5-flash'];
-    
     // This is the "meta-prompt" that instructs Gemini on how to perform the transformation.
     const metaPrompt = `
 You are a world-class prompt engineering expert. Your task is to take a user's goal and rewrite it into a detailed, structured prompt that conforms to the specifications of a target AI persona.
