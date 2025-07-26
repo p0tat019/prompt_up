@@ -119,7 +119,7 @@ const App: React.FC = () => {
                                 />
                             </div>
                             {authError && (
-                                <p id="password-error" className="mt-2 text-red-400 text-sm text-center">{authError}</p>
+                                <p id="password-error" className="mt-2 text-red-400 text-sm text-center" aria-live="polite">{authError}</p>
                             )}
                         </div>
 
@@ -206,7 +206,7 @@ const App: React.FC = () => {
                     )}
 
                     {error && (
-                         <div className="p-4 bg-red-900/50 border border-red-700 text-red-300 rounded-lg text-center">
+                         <div className="p-4 bg-red-900/50 border border-red-700 text-red-300 rounded-lg text-center" aria-live="polite">
                             {error}
                         </div>
                     )}

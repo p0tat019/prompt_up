@@ -69,6 +69,7 @@ ${userTask}
         config: {
             temperature: 0.5,
             topP: 0.95,
+            topK: 64,
         }
     });
 

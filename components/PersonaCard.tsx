@@ -10,13 +10,24 @@ interface PersonaCardProps {
 }
 
 const PersonaCard: React.FC<PersonaCardProps> = ({ persona, isSelected, onSelect }) => {
-    const baseClasses = "relative p-5 rounded-lg border-2 cursor-pointer transition-all duration-200 h-full flex flex-col justify-between";
+    const baseClasses = "relative p-5 rounded-lg border-2 cursor-pointer transition-all duration-200 h-full flex flex-col justify-between focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-purple-500";
     const selectedClasses = "bg-slate-700/50 border-purple-500 shadow-lg scale-105";
     const unselectedClasses = "bg-slate-800 border-slate-700 hover:border-slate-600 hover:bg-slate-700/80";
+
+    const handleKeyDown = (event: React.KeyboardEvent) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault(); // Prevent screen scrolling on spacebar
+            onSelect();
+        }
+    };
 
     return (
         <div
             onClick={onSelect}
+            onKeyDown={handleKeyDown}
+            role="button"
+            tabIndex={0}
+            aria-pressed={isSelected}
             className={`${baseClasses} ${isSelected ? selectedClasses : unselectedClasses}`}
         >
             {isSelected && (
