@@ -1,5 +1,4 @@
-
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { Persona } from '../types';
 
 if (!process.env.API_KEY) {
@@ -40,7 +39,7 @@ ${userTask}
 `;
 
     try {
-        const result = await ai.models.generateContent({
+        const response: GenerateContentResponse = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: metaPrompt,
             config: {
@@ -49,7 +48,7 @@ ${userTask}
             }
         });
         
-        return result.text.trim();
+        return response.text.trim();
     } catch (error) {
         console.error("Error calling Gemini API:", error);
         throw new Error("Failed to communicate with the Gemini API.");
