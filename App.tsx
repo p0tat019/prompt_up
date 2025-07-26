@@ -11,6 +11,7 @@ const App: React.FC = () => {
     const [password, setPassword] = useState<string>('');
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [authError, setAuthError] = useState<string>('');
+    const [isAuthenticating, setIsAuthenticating] = useState<boolean>(false);
 
     // App state
     const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null);
@@ -20,15 +21,33 @@ const App: React.FC = () => {
     const [error, setError] = useState<string>('');
     const [isCopied, setIsCopied] = useState<boolean>(false);
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        // The password is provided by the environment variables on Vercel.
-        if (password === process.env.APP_PASSWORD) {
-            setIsAuthenticated(true);
-            setAuthError('');
-        } else {
-            setAuthError('잘못된 비밀번호입니다.');
-            setPassword('');
+        setAuthError('');
+        setIsAuthenticating(true);
+        
+        try {
+            const response = await fetch('/api/auth', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ password }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                setIsAuthenticated(true);
+            } else {
+                setAuthError(data.message || '인증에 실패했습니다.');
+                setPassword('');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            setAuthError('로그인 중 오류가 발생했습니다. 나중에 다시 시도해주세요.');
+        } finally {
+            setIsAuthenticating(false);
         }
     };
 
@@ -48,7 +67,8 @@ const App: React.FC = () => {
             setOptimizedPrompt(result);
         } catch (e) {
             console.error(e);
-            setError('프롬프트 생성에 실패했습니다. 콘솔에서 자세한 내용을 확인하세요.');
+            const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred';
+            setError(`프롬프트 생성에 실패했습니다: ${errorMessage}`);
         } finally {
             setIsLoading(false);
         }
@@ -94,6 +114,7 @@ const App: React.FC = () => {
                                     placeholder="비밀번호"
                                     className="w-full pl-10 pr-4 py-3 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-shadow duration-200 text-slate-200 placeholder-slate-500"
                                     required
+                                    disabled={isAuthenticating}
                                     aria-describedby="password-error"
                                 />
                             </div>
@@ -104,9 +125,10 @@ const App: React.FC = () => {
 
                         <button
                             type="submit"
+                            disabled={isAuthenticating}
                             className="w-full inline-flex items-center justify-center px-8 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold rounded-lg shadow-lg transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            로그인
+                            {isAuthenticating ? '확인 중...' : '로그인'}
                         </button>
                     </form>
                 </div>

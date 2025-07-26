@@ -1,56 +1,34 @@
-import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { Persona } from '../types';
 
-if (!process.env.API_KEY) {
-    throw new Error("API_KEY environment variable not set");
-}
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
 /**
- * Generates an optimized prompt using Gemini.
+ * Generates an optimized prompt by calling the backend API.
  *
  * @param persona The AI persona to use for optimization.
  * @param userTask The user's rough task description.
  * @returns The optimized prompt as a string.
  */
 export const generateOptimizedPrompt = async (persona: Persona, userTask: string): Promise<string> => {
-    
-    // This is the "meta-prompt" that instructs Gemini on how to perform the transformation.
-    const metaPrompt = `
-You are a world-class prompt engineering expert. Your task is to take a user's goal and rewrite it into a detailed, structured prompt that conforms to the specifications of a target AI persona.
-
-**Target AI Persona System Prompt:**
----
-${persona.prompt}
----
-
-**User's Goal:**
----
-${userTask}
----
-
-**Your Instructions:**
-1.  Deeply analyze the user's goal to understand their true intent.
-2.  Analyze the rules, format, roles, and directives defined in the "Target AI Persona System Prompt."
-3.  Rewrite the user's goal into a new, complete, and highly-detailed prompt that is perfectly formatted FOR the target persona.
-4.  The new prompt must fully incorporate the user's goal while strictly adhering to all formatting rules, role-playing instructions, and constraints of the target persona.
-5.  IMPORTANT: Your entire output must be ONLY the final, rewritten prompt text. Do NOT output any explanation, conversation, or introductory phrases like "Here is the optimized prompt:". Your response should start directly with the content of the rewritten prompt.
-`;
-
     try {
-        const response: GenerateContentResponse = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: metaPrompt,
-            config: {
-                temperature: 0.5,
-                topP: 0.95,
-            }
+        const response = await fetch('/api/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ persona, userTask }),
         });
-        
-        return response.text.trim();
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            // Use the error message from the API, or a default one
+            const errorMessage = data?.error || `API responded with status ${response.status}`;
+            throw new Error(errorMessage);
+        }
+
+        return data.optimizedPrompt;
     } catch (error) {
-        console.error("Error calling Gemini API:", error);
-        throw new Error("Failed to communicate with the Gemini API.");
+        console.error("Error calling backend API:", error);
+        // Re-throw a more user-friendly error
+        throw new Error("API 통신에 실패했습니다. 네트워크 연결을 확인하거나 나중에 다시 시도해주세요.");
     }
 };
